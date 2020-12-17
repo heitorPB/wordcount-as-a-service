@@ -1,0 +1,57 @@
+---
+- name: installation
+  hosts: workers
+  vars:
+    - repo_url: https://github.com/heitorPB/wordcount-as-a-service.git
+    - repo_path: /home/alarm/wordcount-as-a-service
+    - gunicorn_conf_path: /home/alarm/
+
+  tasks:
+    - name: Install dependencies
+      become: yes
+      pacman:
+        update_cache: yes
+        name:
+          - git
+          - python-pip
+          - python-virtualenv
+        state: present
+
+    - name: Download source
+      git:
+        repo: '{{ repo_url }}'
+        dest: '{{ repo_path }}'
+
+    - name: Install code dependencies
+      pip:
+        chdir: '{{ repo_path }}'
+        requirements: requirements.txt
+        virtualenv: ./venv
+
+    - name: Install gunicorn
+      pip:
+        chdir: '{{ repo_path }}'
+        name: gunicorn
+        virtualenv: ./venv
+
+    - name: configure gunicorn
+      copy:
+        src: gunicorn_conf.py
+        dest: '{{ gunicorn_conf_path }}/gunicorn_conf.py'
+        mode: u=r,g=r,o=r
+
+    - name: run gunicorn
+      shell: |
+         {{ repo_path }}/venv/bin/gunicorn \
+         -D \
+         -c /home/alarm/gunicorn_conf.py \
+         --chdir {{ repo_path }}/app \
+         --pid /tmp/gunicorn.pid \
+         -k uvicorn.workers.UvicornH11Worker \
+         main:app
+      become: yes
+      register: guni
+
+    - name: debug gunicorn
+      debug:
+        var: guni

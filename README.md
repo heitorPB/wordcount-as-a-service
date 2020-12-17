@@ -48,6 +48,31 @@ configuration options for auto-tunning.
 
 ## Deployment
 
+### Ansible
+
+Set up your `inventory` file, for example:
+
+```bash
+[workers]
+192.168.15.1 ansible_user=alarm
+192.168.15.2 ansible_user=alarm
+192.168.15.3 ansible_user=alarm
+```
+
+Modify the Ansible playbook as needed. In particular, change how to install
+packages according to your Linux distribution. This playbook assumes ArchLinux,
+but it is possible to use any distribution.
+
+Then run the `wc-playbook.yml`:
+
+```bash
+$ ansible-playbook -i inventory wc-playbook.yml --ask-pass-become
+```
+
+## TODO
+
+- add a load balancer to manage the workers in ansible
+
 ## License
 
 Distributed under the GNU GPLv3. See [LICENSE](LICENSE) for details.

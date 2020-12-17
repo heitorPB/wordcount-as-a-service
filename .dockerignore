@@ -1,2 +1,6 @@
 venv
 __pycache__
+
+gunicorn_conf.py
+inventory-pi
+wc-playbook.yml
